@@ -1,0 +1,11 @@
+pandas==2.2.1
+numpy==1.26.4
+requests==2.31.0
+requests-cache==1.2.0
+retry-requests==2.0.0
+openmeteo-requests==1.1.0
+matplotlib==3.8.2
+seaborn==0.13.2
+plotly==5.20.0
+scikit-learn==1.4.1
+xgboost==2.0.3
