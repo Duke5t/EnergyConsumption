@@ -25,9 +25,9 @@
 
 % ---------- Fill these in ----------
 \newcommand{\coursename}{DATA 2010}
-\newcommand{\termname}{Winter 2026} % change if needed
-\newcommand{\duedate}{[DUE DATE, 11:59pm]} % fill in
-\newcommand{\submissionplace}{UM Learn} % change if needed
+\newcommand{\termname}{Winter 2026}
+\newcommand{\duedate}{[09 Apr 2026]}
+\newcommand{\submissionplace}{UM Learn} 
 
 \title{\textbf{DATA 2010:\\ Predicting State-Level Residential Energy Consumption}\\
 \large \termname}
@@ -40,13 +40,14 @@ Spencer Brule (8025008) \\
 \maketitle
 % =========================================================
 \section{Project Overview}
-Record-breaking energy demands, combined with growing energy conservation initiatives, highlight the importance of developing models that can reliably predict and inform the allocation of energy resources. As populations grow and climate patterns become increasingly variable, the ability to anticipate energy needs becomes both economically and environmentally significant. In this project, we investigate the extent to which publicly available weather data can be used to model and predict residential energy consumption across the United States.
-Specifically, this work leverages data obtained from the U.S. Energy Information Administration (EIA), which provides approximately twenty years of monthly, state-level records for residential natural gas consumption (measured in million cubic feet, MMCF) and electricity consumption (measured in million kilowatt-hours, Mkh). This dataset is paired with weather data acquired from OpenMeteo API, which offers flexibility in feature location, and date selection. With additional feature engineering, most notably Heating Degree Days (HDD) and Cooling Degree Days (CDD), which serve as widely accepted proxies for temperature-driven energy demand, these datasets aligning to explore both explanatory and predictive relationships between weather conditions and energy usage. From an exploratory standpoint, understanding how strongly HDD and CDD correlate with natural gas and electricity consumption, respectively, provides insight into seasonal consumption patterns and the extent to which weather alone can explain observed variability. From a predictive standpoint, the project evaluates whether these relationships can be leveraged to construct models that generalize well across time and across different states.
-To achieve this, multiple modeling approaches will be considered, including linear regression models and more flexible, non-linear tree-based methods such as Random Forest. Linear models offer interpretability and simplicity, making them attractive for understanding direct relationships between variables. In contrast, tree-based models are capable of capturing complex interactions and non-linear effects, which may be present due to various hidden factors which influence energy consumption. 
+Record-breaking energy demands, combined with growing energy conservation initiatives, highlight the importance of developing models that can reliably predict and inform the production and allocation of energy resources. As populations grow and climate patterns become increasingly variable, the ability to anticipate energy needs becomes both economically and environmentally significant.\\
+In this project, we investigate the extent to which publicly available weather data can be used to model and predict residential energy consumption across the United States.
+Specifically, this work leverages data obtained from the U.S. Energy Information Administration (EIA), which provides more than twenty years of monthly, state-level records, for natural gas consumption (measured in million cubic feet, MMCF) and electricity consumption (measured in million kilowatt-hours, Mkh). This dataset is paired with weather data acquired from OpenMeteo API, which offers flexibility in feature location, and date selection. With additional feature engineering, most notably Heating Degree Days (HDD) and Cooling Degree Days (CDD), which serve as widely accepted proxies for temperature-driven energy demand, these datasets align to explore both explanatory and predictive relationships between weather conditions and energy usage. From an exploratory standpoint, understanding how strongly HDD and CDD correlate with natural gas and electricity consumption, respectively, provides insight into seasonal consumption patterns and the extent to which weather alone can explain observed variability. From a predictive standpoint, the project evaluates whether these relationships can be leveraged to construct models that generalize well across time and across different states.
+To achieve this, multiple modeling approaches are considered, including linear regression models and more flexible, non-linear tree-based methods such as Random Forest. Linear models offer interpretability and simplicity, making them attractive for understanding direct relationships between variables. In contrast, tree-based models are capable of capturing complex interactions and non-linear effects, which may be present due to various hidden factors which influence energy consumption. 
 
 Accurate forecasting of residential energy requirements, both in electricity and natural gas, has broad implications in state-level resource planning and infrastructure investment/development. The ability to anticipate demand can allow the energy sector to efficiently allocate resources and minimize waste. Furthermore, the ability to forecast spikes in demand can inform regulators and avoid energy shortages. 
 
-By answering these questions, this project contributes tangible value in a lightweight and open-source model. This project details a successful approach to predicting both natural gas and electricity consumption by state. In addition to accurate predictions, it is shown that a tree based model outperforms linear models given our data and that heating and cooling degree days have strong explanatory power when it comes to energy consumption.
+This project aims to contribute tangible value in a lightweight and open-source model by detailing a successful approach to predicting both natural gas and electricity consumption by state. In addition to accurate predictions, it is shown that a tree based model outperforms linear models given our data; and, that heating and cooling degree days have strong explanatory power when it comes to energy consumption.
 
 
 % =========================================================
@@ -64,12 +65,12 @@ This paper seeks to address the following research questions:
 
 \subsection{Data Origin}
 \begin{itemize}
-  \item Dataset name: \href{https://open-meteo.com/en/docs/historical-weather-api}{OpenMeteo API}
+  \item Dataset name: \href{https://open-meteo.com/en/docs/historical-weather-api}{OpenMeteo API} [1]
   \item What each row represents: Summary weather results from a single day at a single location (State)
   \item Key columns: Date, Min Temp, Mean Temp, Max Temp, Daylight Duration, Wind speed, Wind gusts, Radiation, Precipitation
 \end{itemize}
 \begin{itemize}[leftmargin=18pt]
-  \item Dataset name: \href{https://www.eia.gov/opendata/browser/natural-gas}{EIA API (Gas)}, \href{https://www.eia.gov/opendata/browser/electricity}{EIA API (Electricity)}
+  \item Dataset name: \href{https://www.eia.gov/opendata/browser/natural-gas}{EIA API (Gas)}, \href{https://www.eia.gov/opendata/browser/electricity}{EIA API (Electricity)} [2]
   \item What each row represents: Monthly summary totals for state-level energy consumption, sales, consumers, residential and industry data.
   \item Key columns: Period (Date), State, Consumption
 \end{itemize}
@@ -93,7 +94,7 @@ EIA(Gas)
 Number of rows & [104651] \\
 Number of columns & [11] \\
 Time range (Monthly) & [2001-2026] \\
-Missing values present? & [No] \\
+Missing values present? & [Yes, Imputed] \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -113,8 +114,8 @@ Missing values present? & [No] \\
 \section{Data Cleaning and Feature Engineering}
 
 \subsection{Energy Data}
-Using the Energy Information Administration(EIA) API, datasets for electricity and natural gas consumption by state were downloaded. These datasets were complete and required minimal cleaning; such as trimming, date decomposition, and minor imputation. \newline
-For each energy dataset, industrial and commercial consumer entries were removed as they are not a focus of this model. Further trimming eliminated unnecessary features leaving the dataset with only date, state, and total endpoint consumption of either type of energy. Select rows which contained inaccurate states such as "U.S." or "D.C." were dropped since they don't match the other data and don't align with the goal of the model.  Features were renamed with units of measurement to save space and persist units. For model performance and compatibility with other data, the 'date' column was decomposed into 'year' and 'month' features. Missing values were detected and imputed in approximately 0.12\% of electricity records. \newline
+Using the Energy Information Administration (EIA) API, datasets for electricity and natural gas consumption by state were compiled. These datasets required minimal cleaning; such as trimming, date decomposition, and minor imputation. \newline
+For each energy dataset, industrial and commercial consumer entries were removed as they are not a focus of this model. Further trimming eliminated unnecessary features leaving the dataset with only date, state, and total endpoint consumption of either type of energy. Select rows which contained inaccurate states such as "U.S." or "D.C." were dropped since they represent regions rather than states and do not align with the goal of the model. Features were renamed with units of measurement to save space and persist units. For model performance and compatibility with other data, the 'date' column was decomposed into 'year' and 'month' features. Missing values were detected and imputed in approximately 0.12\% of electricity records. \newline
 Imputation for our target variable(s) relies on an understanding of the behaviour; since average consumption for winter months is dissimilar from average consumption for summer months, simply imputing the mean would lead to poor imputation. Additionally, as state populations grow (or shrink) over time, an average of twenty-five years may also lead to inaccurate imputation. Therefore, the simple solution of imputing the previous year's value for that state and month was employed.\newline
 For electricity and gas data, normalization of the target features (Mkh, MMCF) by the residential population was considered and avoided due to unavailability of gas consumer population. Electricity customers could serve as a proxy for gas customers since both datasets are residential and belong to the same state; however, a conscious choice was made to allow the model to handle these values without normalization.
 The resulting concatenated energy dataframe includes 5 features:
@@ -126,7 +127,7 @@ Interacting with the OpenMeteo Weather API provided many advantages, namely the 
 
 \begin{center}
 Weather Feature Selection \\
-(Table 4.1)\\
+(Table 1)\\
 \begin{tabular}{ll}
 \toprule
 Feature & Aggregation \\
@@ -148,20 +149,20 @@ Precipitation (mm)& Sum\\
 \begin{figure}
     \centering
     \includegraphics[width=\columnwidth]{HDDvsGas.png}
-    \caption{Relationship between HDD and Gas consumption}
+    \caption{Strong linear relationship between HDD and Gas consumption}
     \label{fig: 4.2}
 \end{figure}
 
 \begin{figure}
     \centering
     \includegraphics[width=\columnwidth]{CDDvsElectricity.png}
-    \caption{Relationship between CDD and Electricity consumption}
+    \caption{Points stuck on y-axis represent electricity consumption unexplained by CDD}
     \label{fig: 4.3}
 \end{figure}
 
 \subsection{Feature Engineering}
-For each state, the granularity of entries for weather data was finer than that of the energy data. This provided an excellent opportunity to engineer features prior to eventual aggregation to match the granularity of the two data frames. Aggregation of days by month for each feature was based on the strategy outlined in table 4.1. \\
-Given the goal of attempting to measure energy consumption based on weather, feature engineering was employed to manufacture two new features: 'Heating Degree Days' and 'Cooling Degree Days'. The objective of these features is to apply a metric to days in which the weather dictates the requirement for heating or cooling of the household. Based on the recommended indoor temperatures outlined by the World Health Organization (WHO), our model uses a household temperature range between $17.8$ to $23.9$ celsius[1], average daily temperatures above this range indicate a requirement for cooling, and temperatures below, heating.  
+For each state, the granularity of entries for weather data was finer than that of the energy data. This provided an excellent opportunity to engineer features prior to eventual aggregation to match the granularity of the two data frames. Aggregation of days by month for each feature was based on the strategy outlined in table 1. \\
+Given the goal of attempting to measure energy consumption based on weather, feature engineering was employed to manufacture two new features: 'Heating Degree Days' and 'Cooling Degree Days'. The objective of these features is to apply a metric to days in which the weather dictates the requirement for heating or cooling of the household. Based on the recommended indoor temperatures outlined by the World Health Organization (WHO), our model uses a household temperature range between $17.8$ to $23.9$ celsius [3]. Average daily temperatures above this range indicate a requirement for residential cooling, while temperatures below the range indicate a requirement for residential heating.  
 $$
 HDD = 
 \begin{cases}
@@ -178,7 +179,7 @@ T_{avg}  - 23.9, & \text{if } T_{avg} > 23.9\\
 $$
 \textit{where $T_{avg}$ is the average daily temperature.}
 
-Implementing this formula, two new features are generated which effectively capture not only the need for heating or cooling, but quantify the severity of difference in outdoor temperature versus indoor climate control. We can see that HDD exhibit strong explanatory power for gas consumption (Fig \ref{fig: 4.2}.); however CDD, while showing some correlation, reveal unexplained increases in electricity consumption where CDD is zero, suggesting the presence of additional influencing factors(Fig \ref{fig: 4.3}.).
+Implementing this formula, two new features are generated which effectively capture not only the need for heating or cooling, but quantify the severity of difference in outdoor temperature versus indoor climate control. We can see that HDD exhibits strong explanatory power for gas consumption in a single state (Fig \ref{fig: 4.2}.); however CDD, while showing low correlation, reveals unexplained increases in electricity consumption where CDD is zero, suggesting the presence of additional influencing factors and cannot be reasonably explained by CDD alone (Fig \ref{fig: 4.3}.).
 
 %Electricity vs month
 \begin{figure}
@@ -209,7 +210,7 @@ Feature encoding is an important aspect of setting up data for use in a machine 
 With the completion of encoding, the data set is ready for use in a model.
 
 % =========================================================
-\section{Exploratory Data Analysis and Visualization}
+\section{Exploratory Data Analysis (EDA) and Visualization}
 %Temp
 \begin{figure*}[t]
     \centering
@@ -221,7 +222,7 @@ With the completion of encoding, the data set is ready for use in a model.
 
 Our EDA will serve to illustrate and confirm some basic assumptions about our data as well as offering more in-depth insights into their correlations and inform strategies moving forward.
 
-Firstly, our initial and seemingly trivial observation from HDD is that natural gas consumption and temperature have a strong negative correlation - that is to say generally, when temperature decreases, gas consumption increase and vice-versa. Taking a sample from Illinois(Fig \ref{fig: 5.1}.), we see this assumption confirmed.
+Firstly, our initial and seemingly trivial observation from HDD is that natural gas consumption and temperature have a strong negative correlation - that is to say generally, when temperature decreases, gas consumption increase and vice-versa. Taking a sample from Illinois (Fig \ref{fig: 5.1}.), we see this assumption confirmed.
 
 Additionally, based on our observations of correlations between CDD and electricity consumption, we see a somewhat expected result; we see spikes in electricity consumption in summer months (Jul, Aug) and in winter months (Dec, Jan, Feb). (Fig \ref{fig: 5.2}.) Not only does this support the existence of additional hidden factors influencing electricity consumption, but also illustrates that these factors are seemingly influencing winter months more than others. 
 
@@ -235,7 +236,7 @@ Plotting our selected features into a correlation heatmap (Fig \ref{fig: 5.3}.) 
     \caption{Linear relationships between features}
     \label{fig: 5.3}
 \end{figure}
-Our correlation heatmap illustrates linear relationships between our target variables (MMCF, Mkh) and all individual weather features falls within (-0.34, 0.35), indicating weak linear relationships. This suggests linear models may have poor performance compared to those which may capture non-linear relationships. Since correlation only captures linear dependence — the true relationship between temperature and energy consumption is likely non-monotonic (high consumption in both very cold and very hot months), meaning the predictive signal may be stronger than these coefficients suggest.\newline
+Our correlation heatmap illustrates linear relationships between our target variables (MMCF, Mkh) and all individual weather features fall within [-0.34, 0.35], indicating weak linear relationships. This suggests linear models may have poor performance compared to those which may capture non-linear relationships. Since correlation only captures linear dependence — the true relationship between temperature and energy consumption is likely non-monotonic (high consumption in both very cold and very hot months), meaning the predictive signal may be stronger than these coefficients suggest.\newline
 We see a very strong positive correlation between radiation and daylight duration. This is expected, as solar radiation is directly driven by the number of daylight hours.
 We see a strong positive correlation between temperature measurements and both daylight duration and radiation, which follows naturally since longer days and greater solar radiation are the primary drivers of seasonal temperature variation.
 We also see very strong negative and positive relationships between our engineered heating/cooling degree days (HDD/CDD) and our temperature measurements. This is expected, as HDD and CDD are computed directly from mean daily temperature, which is itself bounded by and correlated with the min/max temperature readings.
@@ -247,10 +248,10 @@ Finally, the strong inter-correlation among temperature, radiation, daylight, HD
 \section{Data Analysis}
 
 \subsection{Analysis Plan}
-Based on observations during data cleaning and exploratory data analysis, some notable results and guidance emerged. These observation serve to inform the strategy of model application. Beginning with linear regression models, scaling, and cross validation, we seek to prove this model outperforms the baseline, avoids overfitting, but more accurate predictions exist. In-line with observations in EDA, we continue to a tree-based random forest models with the intent of proving superior performance to the previous models.  
+Based on observations during data cleaning and exploratory data analysis, some notable results and guidance emerged. These observations serve to inform the strategy of model application. Beginning with linear regression models, scaling, and cross validation, we seek to prove this model outperforms the baseline, avoids overfitting, but more accurate predictions exist. In-line with observations in EDA, we continue to a tree-based random forest models with the intent of proving superior performance to the previous models.  
 
 \subsection{Baseline}
-Using linear regression restricted to the date features and outputs, a simple baseline model can be created.
+Using linear regression restricted to the date features and outputs, a simple baseline model was created.
 \subsection{Multiple Linear Regression}
 Applying multiple linear regression with scaled features assumes linear relationships between features but allows for a straightforward assessment of the relative importance of each feature and evaluation of potential overfitting. Using K-folds cross-validation method (K=5), the model shows no signs of overfitting. This model serves as a secondary baseline given the identification of non-linear relationships in the EDA phase. 
 
@@ -284,7 +285,7 @@ Random Forest & 0.991 & 224 \\
 
 \subsection{Interpretation}
 
-Accurate forecasting of residential energy requirements, both in electricity and natural gas, has broad implications in state-level resource planning and infrastructure investment/development. An accurate, lightweight model trained on easily accessible, open source features with the ability to anticipate energy demand not only showcases interpretability, influence and power; but, also highlights this process can be economical, efficient, and maintainable.  
+Accurate forecasting of residential energy requirements, both in electricity and natural gas, has broad implications in state-level resource planning and infrastructure investment/development. An accurate, lightweight model trained on easily accessible, open source features with the ability to anticipate energy demand not only showcases interpretability, influence and power; but also highlights that this process can be economical, efficient, and maintainable.  
 
 % =========================================================
 \section{Real-World Application}
@@ -319,6 +320,7 @@ If you used AI tools (e.g., ChatGPT, Gemini) for coding or writing, disclose it.
 \begin{itemize}[leftmargin=18pt]
     \item Chatgpt : Used for API caching and error catching.
     \item Chatgpt : Used to edit visualizations to better fit into the paper.
+    \item Chatgpt : For cyclical encoding
     \item Chatgpt : Formatting url links into the paper
     \item Chatgpt : Code debugging
 \end{itemize}
@@ -326,8 +328,8 @@ If you used AI tools (e.g., ChatGPT, Gemini) for coding or writing, disclose it.
 % =========================================================
 \begin{thebibliography}{00}
 
-\bibitem{b1} Energy: https://www.eia.gov/opendata/browser/electricity/retail-sales
-\bibitem{b2} Weather : https://open-meteo.com/en/docs
+\bibitem{b1} Weather : https://open-meteo.com/en/docs
+\bibitem{b2} Energy: https://www.eia.gov/opendata/browser
 \bibitem{b3} Graff, M., Nock, D. The role of thermostats and human behaviour in residential temperature settings in the USA. Nat Energy 11, 400–414 (2026). https://doi.org/10.1038/s41560-025-01948-w
 \end{thebibliography}
 
